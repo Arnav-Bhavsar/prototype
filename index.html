@@ -23,51 +23,66 @@
         <p id="lastUpdated" style="font-size:2vw; text-align:center;"></p>
     </div>
 
-    <script>
-        function showCaretaker() {
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, set, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyBPeBffn5YYfydjZ8oKvpB5UHXS9r6d8sM",
+          authDomain: "patient-monitor-ca78a.firebaseapp.com",
+          databaseURL: "https://patient-monitor-ca78a-default-rtdb.firebaseio.com",
+          projectId: "patient-monitor-ca78a",
+          storageBucket: "patient-monitor-ca78a.firebasestorage.app",
+          messagingSenderId: "454324690577",
+          appId: "1:454324690577:web:7a068e27db8ddbb9f4a930"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        window.showCaretaker = function() {
             document.getElementById('caretaker').style.display = 'block';
             document.getElementById('patient').style.display = 'none';
         }
 
-        function showPatient() {
+        window.showPatient = function() {
             document.getElementById('caretaker').style.display = 'none';
             document.getElementById('patient').style.display = 'block';
             loadMessage();
-            setInterval(loadMessage, 2000);
         }
 
-        async function sendMessage() {
+        window.sendMessage = async function() {
             const message = document.getElementById('messageInput').value;
             if (!message) return;
 
             try {
                 const timestamp = new Date().toLocaleString();
-                await window.storage.set('current_message', JSON.stringify({
+                await set(ref(database, 'currentMessage'), {
                     text: message,
                     timestamp: timestamp
-                }), true);
+                });
                 
                 document.getElementById('messageInput').value = '';
                 document.getElementById('status').textContent = 'Message sent at ' + timestamp;
             } catch (error) {
-                document.getElementById('status').textContent = 'Error sending message';
+                document.getElementById('status').textContent = 'Error sending message: ' + error.message;
                 console.error(error);
             }
         }
 
-        async function loadMessage() {
-            try {
-                const result = await window.storage.get('current_message', true);
-                if (result && result.value) {
-                    const data = JSON.parse(result.value);
+        function loadMessage() {
+            const messageRef = ref(database, 'currentMessage');
+            onValue(messageRef, (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
                     document.getElementById('messageDisplay').textContent = data.text;
                     document.getElementById('lastUpdated').textContent = 'Last updated: ' + data.timestamp;
+                } else {
+                    document.getElementById('messageDisplay').textContent = 'No message yet';
                 }
-            } catch (error) {
-                document.getElementById('messageDisplay').textContent = 'No message yet';
-                console.error(error);
-            }
+            });
         }
     </script>
 </body>
+</html>
 </html>
