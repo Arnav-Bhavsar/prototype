@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Communication System</title>
+</head>
+<body>
+    <h1>Select Mode</h1>
+    <button onclick="showCaretaker()">Caretaker (Send Message)</button>
+    <button onclick="showPatient()">Patient Monitor (Receive Message)</button>
+
+    <div id="caretaker" style="display:none;">
+        <h2>Caretaker - Send Message</h2>
+        <input type="text" id="messageInput" placeholder="Enter message">
+        <button onclick="sendMessage()">Send</button>
+        <p id="status"></p>
+    </div>
+
+    <div id="patient" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; margin:0; padding:20px; box-sizing:border-box;">
+        <button onclick="location.reload()" style="position:absolute; top:10px; left:10px; font-size:16px;">Back</button>
+        <div id="messageDisplay" style="font-size:10vw; display:flex; align-items:center; justify-content:center; height:90%; width:100%; text-align:center;">Waiting for message...</div>
+        <p id="lastUpdated" style="font-size:2vw; text-align:center;"></p>
+    </div>
+
+    <script>
+        function showCaretaker() {
+            document.getElementById('caretaker').style.display = 'block';
+            document.getElementById('patient').style.display = 'none';
+        }
+
+        function showPatient() {
+            document.getElementById('caretaker').style.display = 'none';
+            document.getElementById('patient').style.display = 'block';
+            loadMessage();
+            setInterval(loadMessage, 2000);
+        }
+
+        async function sendMessage() {
+            const message = document.getElementById('messageInput').value;
+            if (!message) return;
+
+            try {
+                const timestamp = new Date().toLocaleString();
+                await window.storage.set('current_message', JSON.stringify({
+                    text: message,
+                    timestamp: timestamp
+                }), true);
+                
+                document.getElementById('messageInput').value = '';
+                document.getElementById('status').textContent = 'Message sent at ' + timestamp;
+            } catch (error) {
+                document.getElementById('status').textContent = 'Error sending message';
+                console.error(error);
+            }
+        }
+
+        async function loadMessage() {
+            try {
+                const result = await window.storage.get('current_message', true);
+                if (result && result.value) {
+                    const data = JSON.parse(result.value);
+                    document.getElementById('messageDisplay').textContent = data.text;
+                    document.getElementById('lastUpdated').textContent = 'Last updated: ' + data.timestamp;
+                }
+            } catch (error) {
+                document.getElementById('messageDisplay').textContent = 'No message yet';
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>
