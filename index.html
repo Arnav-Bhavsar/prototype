@@ -4,28 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Communication System</title>
-</head>
-<body>
-    <h1>Select Mode</h1>
-    <button onclick="showCaretaker()">Caretaker (Send Message)</button>
-    <button onclick="showPatient()">Patient Monitor (Receive Message)</button>
-
-    <div id="caretaker" style="display:none;">
-        <h2>Caretaker - Send Message</h2>
-        <input type="text" id="messageInput" placeholder="Enter message">
-        <button onclick="sendMessage()">Send</button>
-        <p id="status"></p>
-    </div>
-
-    <div id="patient" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; margin:0; padding:20px; box-sizing:border-box;">
-        <button onclick="location.reload()" style="position:absolute; top:10px; left:10px; font-size:16px;">Back</button>
-        <div id="messageDisplay" style="font-size:10vw; display:flex; align-items:center; justify-content:center; height:90%; width:100%; text-align:center;">Waiting for message...</div>
-        <p id="lastUpdated" style="font-size:2vw; text-align:center;"></p>
-    </div>
-
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getDatabase, ref, set, onValue } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        import { getDatabase, ref, set, onValue, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
         const firebaseConfig = {
           apiKey: "AIzaSyBPeBffn5YYfydjZ8oKvpB5UHXS9r6d8sM",
@@ -40,18 +21,86 @@
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
 
-        window.showCaretaker = function() {
-            document.getElementById('caretaker').style.display = 'block';
-            document.getElementById('patient').style.display = 'none';
+        const defaultQuickMessages = [
+            "💊💊 Time for medication 💊💊",
+            "🥪🥪 Time for lunch 🥪🥪"
+        ];
+
+        let audioContext;
+        let lastMessageText = '';
+        let messageTimeout;
+
+        function playChime() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            
+            const now = audioContext.currentTime;
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(800, now);
+            oscillator.frequency.exponentialRampToValueAtTime(400, now + 0.3);
+            
+            gainNode.gain.setValueAtTime(0.3, now);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
+            
+            oscillator.start(now);
+            oscillator.stop(now + 0.5);
         }
 
-        window.showPatient = function() {
+        async function showCaretaker() {
+            document.getElementById('caretaker').style.display = 'block';
+            document.getElementById('patient').style.display = 'none';
+            document.getElementById('modeSelection').style.display = 'none';
+            await loadQuickMessages();
+        }
+
+        function showPatient() {
             document.getElementById('caretaker').style.display = 'none';
             document.getElementById('patient').style.display = 'block';
+            document.getElementById('modeSelection').style.display = 'none';
             loadMessage();
         }
 
-        window.sendMessage = async function() {
+        async function loadQuickMessages() {
+            const snapshot = await get(ref(database, 'quickMessages'));
+            let messages = snapshot.val() || defaultQuickMessages;
+            
+            const container = document.getElementById('quickMessages');
+            container.innerHTML = '';
+            
+            messages.forEach((msg, index) => {
+                const button = document.createElement('button');
+                button.textContent = msg;
+                button.onclick = () => sendQuickMessage(msg);
+                button.style.display = 'block';
+                button.style.margin = '5px 0';
+                button.style.padding = '10px';
+                button.style.fontSize = '16px';
+                container.appendChild(button);
+            });
+        }
+
+        async function sendQuickMessage(message) {
+            try {
+                const timestamp = new Date().toLocaleString();
+                await set(ref(database, 'currentMessage'), {
+                    text: message,
+                    timestamp: timestamp
+                });
+                
+                document.getElementById('status').textContent = 'Message sent at ' + timestamp;
+            } catch (error) {
+                document.getElementById('status').textContent = 'Error sending message: ' + error.message;
+                console.error(error);
+            }
+        }
+
+        async function sendMessage() {
             const message = document.getElementById('messageInput').value;
             if (!message) return;
 
@@ -70,18 +119,96 @@
             }
         }
 
+        async function saveQuickMessage() {
+            const message = document.getElementById('newQuickMessage').value;
+            if (!message) return;
+
+            try {
+                const snapshot = await get(ref(database, 'quickMessages'));
+                let messages = snapshot.val() || defaultQuickMessages;
+                messages.push(message);
+                
+                await set(ref(database, 'quickMessages'), messages);
+                
+                document.getElementById('newQuickMessage').value = '';
+                document.getElementById('status').textContent = 'Quick message saved!';
+                await loadQuickMessages();
+            } catch (error) {
+                document.getElementById('status').textContent = 'Error saving message: ' + error.message;
+                console.error(error);
+            }
+        }
+
         function loadMessage() {
             const messageRef = ref(database, 'currentMessage');
             onValue(messageRef, (snapshot) => {
                 const data = snapshot.val();
+                
                 if (data) {
+                    if (data.text !== lastMessageText) {
+                        playChime();
+                        lastMessageText = data.text;
+                    }
+                    
                     document.getElementById('messageDisplay').textContent = data.text;
                     document.getElementById('lastUpdated').textContent = 'Last updated: ' + data.timestamp;
+                    
+                    if (messageTimeout) {
+                        clearTimeout(messageTimeout);
+                    }
+                    
+                    messageTimeout = setTimeout(() => {
+                        document.getElementById('messageDisplay').textContent = 'Waiting for message...';
+                        document.getElementById('lastUpdated').textContent = '';
+                        lastMessageText = '';
+                    }, 5 * 60 * 1000);
                 } else {
-                    document.getElementById('messageDisplay').textContent = 'No message yet';
+                    document.getElementById('messageDisplay').textContent = 'Waiting for message...';
                 }
             });
         }
+
+        function goBack() {
+            location.reload();
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('caretakerBtn').addEventListener('click', showCaretaker);
+            document.getElementById('patientBtn').addEventListener('click', showPatient);
+            document.getElementById('sendBtn').addEventListener('click', sendMessage);
+            document.getElementById('saveBtn').addEventListener('click', saveQuickMessage);
+            document.getElementById('backBtn').addEventListener('click', goBack);
+        });
     </script>
+</head>
+<body>
+    <div id="modeSelection">
+        <h1>Select Mode</h1>
+        <button id="caretakerBtn">Caretaker (Send Message)</button>
+        <button id="patientBtn">Patient Monitor (Receive Message)</button>
+    </div>
+
+    <div id="caretaker" style="display:none;">
+        <h2>Caretaker - Send Message</h2>
+        
+        <h3>Quick Messages</h3>
+        <div id="quickMessages"></div>
+        
+        <h3>Custom Message</h3>
+        <input type="text" id="messageInput" placeholder="Enter custom message">
+        <button id="sendBtn">Send Custom</button>
+        
+        <h3>Save New Quick Message</h3>
+        <input type="text" id="newQuickMessage" placeholder="Enter message to save">
+        <button id="saveBtn">Save</button>
+        
+        <p id="status"></p>
+    </div>
+
+    <div id="patient" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; margin:0; padding:20px; box-sizing:border-box;">
+        <button id="backBtn" style="position:absolute; top:10px; left:10px; font-size:16px;">Back</button>
+        <div id="messageDisplay" style="font-size:10vw; display:flex; align-items:center; justify-content:center; height:90%; width:100%; text-align:center;">Waiting for message...</div>
+        <p id="lastUpdated" style="font-size:2vw; text-align:center;"></p>
+    </div>
 </body>
 </html>
