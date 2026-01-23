@@ -59,21 +59,21 @@
         }
         
         function flashScreen() {
-            const display = document.getElementById('messageDisplay');
-            const originalBg = display.style.backgroundColor || 'transparent';
+            const patientDiv = document.getElementById('patient');
+            const originalBg = patientDiv.style.backgroundColor || 'white';
             
             let flashCount = 0;
             const flashInterval = setInterval(() => {
                 if (flashCount % 2 === 0) {
-                    display.style.backgroundColor = 'yellow';
+                    patientDiv.style.backgroundColor = 'yellow';
                 } else {
-                    display.style.backgroundColor = originalBg;
+                    patientDiv.style.backgroundColor = originalBg;
                 }
                 flashCount++;
                 
                 if (flashCount >= 6) {
                     clearInterval(flashInterval);
-                    display.style.backgroundColor = originalBg;
+                    patientDiv.style.backgroundColor = originalBg;
                 }
             }, 300);
         }
@@ -178,7 +178,6 @@
                     }
                     
                     document.getElementById('messageDisplay').textContent = data.text;
-                    document.getElementById('lastUpdated').textContent = 'Last updated: ' + data.timestamp;
                     
                     if (messageTimeout) {
                         clearTimeout(messageTimeout);
@@ -186,7 +185,6 @@
                     
                     messageTimeout = setTimeout(() => {
                         document.getElementById('messageDisplay').textContent = 'Waiting for message...';
-                        document.getElementById('lastUpdated').textContent = '';
                         lastMessageText = '';
                     }, 5 * 60 * 1000);
                 } else {
@@ -232,10 +230,9 @@
         <p id="status"></p>
     </div>
 
-    <div id="patient" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; margin:0; padding:20px; box-sizing:border-box;">
+    <div id="patient" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; margin:0; padding:20px; box-sizing:border-box; background-color:white;">
         <button id="backBtn" style="position:absolute; top:10px; left:10px; font-size:16px;">Back</button>
-        <div id="messageDisplay" style="font-size:10vw; display:flex; align-items:center; justify-content:center; height:90%; width:100%; text-align:center;">Waiting for message...</div>
-        <p id="lastUpdated" style="font-size:2vw; text-align:center;"></p>
+        <div id="messageDisplay" style="font-size:10vw; display:flex; align-items:center; justify-content:center; height:100%; width:100%; text-align:center;">Waiting for message...</div>
     </div>
 </body>
 </html>
