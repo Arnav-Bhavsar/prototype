@@ -36,20 +36,46 @@
             }
             
             const now = audioContext.currentTime;
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
             
-            oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
+            const osc1 = audioContext.createOscillator();
+            const gain1 = audioContext.createGain();
+            osc1.connect(gain1);
+            gain1.connect(audioContext.destination);
+            osc1.frequency.setValueAtTime(600, now);
+            gain1.gain.setValueAtTime(0.2, now);
+            gain1.gain.exponentialRampToValueAtTime(0.01, now + 1.5);
+            osc1.start(now);
+            osc1.stop(now + 1.5);
             
-            oscillator.frequency.setValueAtTime(800, now);
-            oscillator.frequency.exponentialRampToValueAtTime(400, now + 0.3);
+            const osc2 = audioContext.createOscillator();
+            const gain2 = audioContext.createGain();
+            osc2.connect(gain2);
+            gain2.connect(audioContext.destination);
+            osc2.frequency.setValueAtTime(800, now + 0.3);
+            gain2.gain.setValueAtTime(0.15, now + 0.3);
+            gain2.gain.exponentialRampToValueAtTime(0.01, now + 1.8);
+            osc2.start(now + 0.3);
+            osc2.stop(now + 1.8);
+        }
+        
+        function flashScreen() {
+            const display = document.getElementById('messageDisplay');
+            const originalBg = display.style.backgroundColor || 'transparent';
             
-            gainNode.gain.setValueAtTime(0.3, now);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.5);
-            
-            oscillator.start(now);
-            oscillator.stop(now + 0.5);
+            let flashCount = 0;
+            const flashInterval = setInterval(() => {
+                if (flashCount % 2 === 0) {
+                    display.style.backgroundColor = 'yellow';
+                } else {
+                    display.style.backgroundColor = originalBg;
+                }
+                flashCount++;
+                
+                if (flashCount >= 6) {
+                    clearInterval(flashInterval);
+                    display.style.backgroundColor = originalBg;
+                }
+            }, 300);
         }
 
         async function showCaretaker() {
@@ -147,6 +173,7 @@
                 if (data) {
                     if (data.text !== lastMessageText) {
                         playChime();
+                        flashScreen();
                         lastMessageText = data.text;
                     }
                     
