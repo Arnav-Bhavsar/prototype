@@ -582,7 +582,7 @@
                     
                     button.appendChild(content);
                     button.appendChild(deleteButton);
-                    button.onclick = () => sendQuickMessage(msg.text);
+                    button.onclick = () => sendQuickMessage(msg.text, msg.icon);
                     
                     container.appendChild(button);
                 });
@@ -605,11 +605,12 @@
             }
         }
 
-        async function sendQuickMessage(message) {
+        async function sendQuickMessage(message, icon) {
             try {
                 const timestamp = new Date().toLocaleString();
                 await set(ref(database, 'currentMessage'), {
                     text: message,
+                    icon: icon,
                     timestamp: timestamp
                 });
                 
@@ -677,9 +678,19 @@
                         playChime();
                         flashScreen();
                         lastMessageText = data.text;
+                        
+                        // Show icon first if it exists
+                        if (data.icon) {
+                            document.getElementById('messageDisplay').innerHTML = `<div style="font-size: 15vw;">${data.icon}</div>`;
+                            
+                            // Then show the text after 2 seconds
+                            setTimeout(() => {
+                                document.getElementById('messageDisplay').textContent = data.text;
+                            }, 2000);
+                        } else {
+                            document.getElementById('messageDisplay').textContent = data.text;
+                        }
                     }
-                    
-                    document.getElementById('messageDisplay').textContent = data.text;
                     
                     if (messageTimeout) {
                         clearTimeout(messageTimeout);
