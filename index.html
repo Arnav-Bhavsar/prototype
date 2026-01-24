@@ -73,7 +73,7 @@
         
         #caretaker h2 {
             font-size: 2em;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             text-align: center;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
         }
@@ -82,6 +82,37 @@
             font-size: 1.3em;
             margin: 25px 0 15px 0;
             opacity: 0.95;
+        }
+        
+        .connectionStatus {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            background: rgba(255,255,255,0.2);
+            padding: 12px 20px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .statusDot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #4CAF50;
+            box-shadow: 0 0 10px #4CAF50;
+            animation: pulse 2s infinite;
+        }
+        
+        .statusDot.offline {
+            background: #f44336;
+            box-shadow: 0 0 10px #f44336;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
         
         #quickMessages {
@@ -104,12 +135,39 @@
             font-weight: 600;
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: space-between;
             gap: 10px;
+            position: relative;
         }
         
         .quickMessageBtn:active {
             transform: scale(0.98);
+        }
+        
+        .quickMessageContent {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+        }
+        
+        .deleteBtn {
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            font-size: 1.2em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .deleteBtn:hover {
+            background: #d32f2f;
         }
         
         .icon {
@@ -145,13 +203,66 @@
             transform: scale(0.98);
         }
         
-        #status {
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            color: #667eea;
+            padding: 20px 30px;
+            border-radius: 15px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            font-weight: 600;
+            font-size: 1.1em;
+            z-index: 10000;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .notification.success {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .notification.error {
+            background: #f44336;
+            color: white;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .messageHistory {
+            background: rgba(255,255,255,0.15);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+        
+        .messageHistory h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+        
+        .historyItem {
             background: rgba(255,255,255,0.2);
-            padding: 15px;
+            padding: 12px 15px;
             border-radius: 10px;
-            margin-top: 15px;
-            text-align: center;
-            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+        
+        .historyTime {
+            opacity: 0.7;
+            font-size: 0.85em;
+            margin-top: 5px;
         }
         
         #backBtn {
@@ -175,7 +286,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 100%;
+            height: calc(100% - 100px);
             width: 100%;
             text-align: center;
             font-weight: bold;
@@ -183,10 +294,37 @@
             text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
             padding: 40px;
         }
+        
+        #clockDisplay {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 3vw;
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            font-weight: bold;
+            background: rgba(0,0,0,0.3);
+            padding: 15px 25px;
+            border-radius: 15px;
+        }
+        
+        .patientConnection {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.5);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
     </style>
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getDatabase, ref, set, onValue, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        import { getDatabase, ref, set, onValue, get, push } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
 
         const firebaseConfig = {
           apiKey: "AIzaSyBPeBffn5YYfydjZ8oKvpB5UHXS9r6d8sM",
@@ -202,13 +340,102 @@
         const database = getDatabase(app);
 
         const defaultQuickMessages = [
-            { text: "TIME FOR MEDICATION", icon: "💊" },
-            { text: "TIME FOR LUNCH", icon: "🍽️" }
+            { category: "Medication", text: "TIME FOR MEDICATION", icon: "💊" },
+            { category: "Medication", text: "TAKE YOUR PILLS", icon: "💊" },
+            { category: "Meals", text: "TIME FOR LUNCH", icon: "🍽️" },
+            { category: "Meals", text: "TIME FOR DINNER", icon: "🍽️" },
+            { category: "Meals", text: "TIME FOR BREAKFAST", icon: "☕" },
+            { category: "Reminders", text: "DRINK WATER", icon: "💧" },
+            { category: "Reminders", text: "TIME FOR EXERCISE", icon: "🚶" },
+            { category: "Communication", text: "PLEASE CALL ME", icon: "📞" },
+            { category: "Emergency", text: "EMERGENCY - CALL 911", icon: "🚨" }
         ];
 
         let audioContext;
         let lastMessageText = '';
         let messageTimeout;
+        let isConnected = false;
+
+        function updateConnectionStatus(connected) {
+            isConnected = connected;
+            const dots = document.querySelectorAll('.statusDot');
+            const statusTexts = document.querySelectorAll('.statusText');
+            
+            dots.forEach(dot => {
+                if (connected) {
+                    dot.classList.remove('offline');
+                } else {
+                    dot.classList.add('offline');
+                }
+            });
+            
+            statusTexts.forEach(text => {
+                text.textContent = connected ? 'Connected' : 'Offline';
+            });
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideIn 0.3s ease reverse';
+                setTimeout(() => notification.remove(), 300);
+            }, 3000);
+        }
+
+        async function addToHistory(message) {
+            try {
+                const historyRef = ref(database, 'messageHistory');
+                const snapshot = await get(historyRef);
+                let history = snapshot.val() || [];
+                
+                history.unshift({
+                    text: message,
+                    timestamp: new Date().toLocaleString()
+                });
+                
+                if (history.length > 5) {
+                    history = history.slice(0, 5);
+                }
+                
+                await set(historyRef, history);
+                loadHistory();
+            } catch (error) {
+                console.error('Error adding to history:', error);
+            }
+        }
+
+        async function loadHistory() {
+            try {
+                const snapshot = await get(ref(database, 'messageHistory'));
+                const history = snapshot.val() || [];
+                
+                const container = document.getElementById('historyContainer');
+                if (!container) return;
+                
+                container.innerHTML = '';
+                
+                if (history.length === 0) {
+                    container.innerHTML = '<div style="opacity: 0.6; text-align: center;">No messages sent yet</div>';
+                    return;
+                }
+                
+                history.forEach(item => {
+                    const historyItem = document.createElement('div');
+                    historyItem.className = 'historyItem';
+                    historyItem.innerHTML = `
+                        <div>${item.text}</div>
+                        <div class="historyTime">${item.timestamp}</div>
+                    `;
+                    container.appendChild(historyItem);
+                });
+            } catch (error) {
+                console.error('Error loading history:', error);
+            }
+        }
 
         function playChime() {
             if (!audioContext) {
@@ -258,11 +485,36 @@
             }, 300);
         }
 
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-US', { 
+                hour: 'numeric', 
+                minute: '2-digit',
+                hour12: true 
+            });
+            const dateString = now.toLocaleDateString('en-US', { 
+                weekday: 'short', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+            
+            const clockElement = document.getElementById('clockDisplay');
+            if (clockElement) {
+                clockElement.innerHTML = `${timeString}<br><span style="font-size: 0.6em;">${dateString}</span>`;
+            }
+        }
+
         async function showCaretaker() {
             document.getElementById('caretaker').style.display = 'block';
             document.getElementById('patient').style.display = 'none';
             document.getElementById('modeSelection').style.display = 'none';
             await loadQuickMessages();
+            await loadHistory();
+            
+            const connRef = ref(database, '.info/connected');
+            onValue(connRef, (snapshot) => {
+                updateConnectionStatus(snapshot.val() === true);
+            });
         }
 
         function showPatient() {
@@ -270,6 +522,13 @@
             document.getElementById('patient').style.display = 'block';
             document.getElementById('modeSelection').style.display = 'none';
             loadMessage();
+            updateClock();
+            setInterval(updateClock, 1000);
+            
+            const connRef = ref(database, '.info/connected');
+            onValue(connRef, (snapshot) => {
+                updateConnectionStatus(snapshot.val() === true);
+            });
         }
 
         async function loadQuickMessages() {
@@ -279,23 +538,71 @@
             const container = document.getElementById('quickMessages');
             container.innerHTML = '';
             
-            messages.forEach((msg) => {
-                const button = document.createElement('button');
-                button.className = 'quickMessageBtn';
-                
-                const icon = document.createElement('span');
-                icon.className = 'icon';
-                icon.textContent = msg.icon || '📢';
-                
-                const text = document.createElement('span');
-                text.textContent = msg.text;
-                
-                button.appendChild(icon);
-                button.appendChild(text);
-                button.onclick = () => sendQuickMessage(msg.text);
-                
-                container.appendChild(button);
+            const grouped = {};
+            messages.forEach((msg, index) => {
+                msg.index = index;
+                const cat = msg.category || 'Other';
+                if (!grouped[cat]) grouped[cat] = [];
+                grouped[cat].push(msg);
             });
+            
+            Object.keys(grouped).forEach((category) => {
+                const categoryHeader = document.createElement('h4');
+                categoryHeader.textContent = category;
+                categoryHeader.style.marginTop = '20px';
+                categoryHeader.style.marginBottom = '10px';
+                categoryHeader.style.fontSize = '1.1em';
+                categoryHeader.style.opacity = '0.9';
+                container.appendChild(categoryHeader);
+                
+                grouped[category].forEach((msg) => {
+                    const button = document.createElement('button');
+                    button.className = 'quickMessageBtn';
+                    
+                    const content = document.createElement('div');
+                    content.className = 'quickMessageContent';
+                    
+                    const icon = document.createElement('span');
+                    icon.className = 'icon';
+                    icon.textContent = msg.icon || '📢';
+                    
+                    const text = document.createElement('span');
+                    text.textContent = msg.text;
+                    
+                    content.appendChild(icon);
+                    content.appendChild(text);
+                    
+                    const deleteButton = document.createElement('button');
+                    deleteButton.className = 'deleteBtn';
+                    deleteButton.textContent = '×';
+                    deleteButton.onclick = (e) => {
+                        e.stopPropagation();
+                        deleteQuickMessage(msg.index);
+                    };
+                    
+                    button.appendChild(content);
+                    button.appendChild(deleteButton);
+                    button.onclick = () => sendQuickMessage(msg.text);
+                    
+                    container.appendChild(button);
+                });
+            });
+        }
+
+        async function deleteQuickMessage(index) {
+            try {
+                const snapshot = await get(ref(database, 'quickMessages'));
+                let messages = snapshot.val() || defaultQuickMessages;
+                
+                messages.splice(index, 1);
+                
+                await set(ref(database, 'quickMessages'), messages);
+                showNotification('Quick message deleted!', 'success');
+                await loadQuickMessages();
+            } catch (error) {
+                showNotification('Error deleting message', 'error');
+                console.error(error);
+            }
         }
 
         async function sendQuickMessage(message) {
@@ -306,16 +613,20 @@
                     timestamp: timestamp
                 });
                 
-                document.getElementById('status').textContent = 'Message sent at ' + timestamp;
+                await addToHistory(message);
+                showNotification('Message sent successfully!', 'success');
             } catch (error) {
-                document.getElementById('status').textContent = 'Error sending message: ' + error.message;
+                showNotification('Error sending message', 'error');
                 console.error(error);
             }
         }
 
         async function sendMessage() {
             const message = document.getElementById('messageInput').value;
-            if (!message) return;
+            if (!message) {
+                showNotification('Please enter a message', 'error');
+                return;
+            }
 
             try {
                 const timestamp = new Date().toLocaleString();
@@ -325,29 +636,33 @@
                 });
                 
                 document.getElementById('messageInput').value = '';
-                document.getElementById('status').textContent = 'Message sent at ' + timestamp;
+                await addToHistory(message);
+                showNotification('Message sent successfully!', 'success');
             } catch (error) {
-                document.getElementById('status').textContent = 'Error sending message: ' + error.message;
+                showNotification('Error sending message', 'error');
                 console.error(error);
             }
         }
 
         async function saveQuickMessage() {
             const message = document.getElementById('newQuickMessage').value;
-            if (!message) return;
+            if (!message) {
+                showNotification('Please enter a message to save', 'error');
+                return;
+            }
 
             try {
                 const snapshot = await get(ref(database, 'quickMessages'));
                 let messages = snapshot.val() || defaultQuickMessages;
-                messages.push({ text: message, icon: '📢' });
+                messages.push({ text: message, icon: '📢', category: 'Custom' });
                 
                 await set(ref(database, 'quickMessages'), messages);
                 
                 document.getElementById('newQuickMessage').value = '';
-                document.getElementById('status').textContent = 'Quick message saved!';
+                showNotification('Quick message saved!', 'success');
                 await loadQuickMessages();
             } catch (error) {
-                document.getElementById('status').textContent = 'Error saving message: ' + error.message;
+                showNotification('Error saving message', 'error');
                 console.error(error);
             }
         }
@@ -403,6 +718,11 @@
     <div id="caretaker" style="display:none;">
         <h2>Caretaker Portal</h2>
         
+        <div class="connectionStatus">
+            <div class="statusDot"></div>
+            <span class="statusText">Connecting...</span>
+        </div>
+        
         <h3>Quick Messages</h3>
         <div id="quickMessages"></div>
         
@@ -414,12 +734,20 @@
         <input type="text" id="newQuickMessage" placeholder="Enter message to save...">
         <button id="saveBtn">Save Quick Message</button>
         
-        <p id="status"></p>
+        <div class="messageHistory">
+            <h3>Recent Messages</h3>
+            <div id="historyContainer"></div>
+        </div>
     </div>
 
     <div id="patient" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh;">
         <button id="backBtn">Back</button>
+        <div id="clockDisplay"></div>
         <div id="messageDisplay">Waiting for message...</div>
+        <div class="patientConnection">
+            <div class="statusDot"></div>
+            <span class="statusText">Connecting...</span>
+        </div>
     </div>
 </body>
 </html>
