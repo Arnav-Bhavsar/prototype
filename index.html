@@ -4,6 +4,186 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Communication System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        /* PATIENT MONITOR BACKGROUND - EASY TO CUSTOMIZE */
+        #patient {
+            /* Change the URL below to your background image */
+            background-image: url('YOUR_BACKGROUND_URL_HERE');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            /* If no image, this color shows */
+            background-color: #2c3e50;
+        }
+        
+        #modeSelection {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        #modeSelection h1 {
+            color: white;
+            font-size: 2.5em;
+            margin-bottom: 40px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        #modeSelection button {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 20px 40px;
+            font-size: 1.3em;
+            border-radius: 50px;
+            margin: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            font-weight: 600;
+            min-width: 300px;
+        }
+        
+        #modeSelection button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        #caretaker {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 30px;
+            color: white;
+        }
+        
+        #caretaker h2 {
+            font-size: 2em;
+            margin-bottom: 30px;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        #caretaker h3 {
+            font-size: 1.3em;
+            margin: 25px 0 15px 0;
+            opacity: 0.95;
+        }
+        
+        #quickMessages {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .quickMessageBtn {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 20px;
+            font-size: 1.2em;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .quickMessageBtn:active {
+            transform: scale(0.98);
+        }
+        
+        .icon {
+            font-size: 1.5em;
+        }
+        
+        input {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 15px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        #sendBtn, #saveBtn {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            font-weight: 600;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        #sendBtn:active, #saveBtn:active {
+            transform: scale(0.98);
+        }
+        
+        #status {
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        #backBtn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.9);
+            color: #2c3e50;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.1em;
+            border-radius: 25px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            font-weight: 600;
+            z-index: 1000;
+        }
+        
+        #messageDisplay {
+            font-size: 8vw;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            width: 100%;
+            text-align: center;
+            font-weight: bold;
+            color: white;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+            padding: 40px;
+        }
+    </style>
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getDatabase, ref, set, onValue, get } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
@@ -22,8 +202,8 @@
         const database = getDatabase(app);
 
         const defaultQuickMessages = [
-            "💊💊 Time for medication 💊💊",
-            "🥪🥪 Time for lunch 🥪🥪"
+            { text: "TIME FOR MEDICATION", icon: "💊" },
+            { text: "TIME FOR LUNCH", icon: "🍽️" }
         ];
 
         let audioContext;
@@ -60,7 +240,7 @@
         
         function flashScreen() {
             const patientDiv = document.getElementById('patient');
-            const originalBg = patientDiv.style.backgroundColor || 'white';
+            const originalBg = patientDiv.style.backgroundColor || '#2c3e50';
             
             let flashCount = 0;
             const flashInterval = setInterval(() => {
@@ -73,7 +253,7 @@
                 
                 if (flashCount >= 6) {
                     clearInterval(flashInterval);
-                    patientDiv.style.backgroundColor = originalBg;
+                    patientDiv.style.backgroundColor = 'transparent';
                 }
             }, 300);
         }
@@ -99,14 +279,21 @@
             const container = document.getElementById('quickMessages');
             container.innerHTML = '';
             
-            messages.forEach((msg, index) => {
+            messages.forEach((msg) => {
                 const button = document.createElement('button');
-                button.textContent = msg;
-                button.onclick = () => sendQuickMessage(msg);
-                button.style.display = 'block';
-                button.style.margin = '5px 0';
-                button.style.padding = '10px';
-                button.style.fontSize = '16px';
+                button.className = 'quickMessageBtn';
+                
+                const icon = document.createElement('span');
+                icon.className = 'icon';
+                icon.textContent = msg.icon || '📢';
+                
+                const text = document.createElement('span');
+                text.textContent = msg.text;
+                
+                button.appendChild(icon);
+                button.appendChild(text);
+                button.onclick = () => sendQuickMessage(msg.text);
+                
                 container.appendChild(button);
             });
         }
@@ -152,7 +339,7 @@
             try {
                 const snapshot = await get(ref(database, 'quickMessages'));
                 let messages = snapshot.val() || defaultQuickMessages;
-                messages.push(message);
+                messages.push({ text: message, icon: '📢' });
                 
                 await set(ref(database, 'quickMessages'), messages);
                 
@@ -208,31 +395,31 @@
 </head>
 <body>
     <div id="modeSelection">
-        <h1>Select Mode</h1>
+        <h1>Patient Monitor System</h1>
         <button id="caretakerBtn">Caretaker (Send Message)</button>
-        <button id="patientBtn">Patient Monitor (Receive Message)</button>
+        <button id="patientBtn">Patient Monitor (Display)</button>
     </div>
 
     <div id="caretaker" style="display:none;">
-        <h2>Caretaker - Send Message</h2>
+        <h2>Caretaker Portal</h2>
         
         <h3>Quick Messages</h3>
         <div id="quickMessages"></div>
         
         <h3>Custom Message</h3>
-        <input type="text" id="messageInput" placeholder="Enter custom message">
-        <button id="sendBtn">Send Custom</button>
+        <input type="text" id="messageInput" placeholder="Type your message here...">
+        <button id="sendBtn">Send Custom Message</button>
         
         <h3>Save New Quick Message</h3>
-        <input type="text" id="newQuickMessage" placeholder="Enter message to save">
-        <button id="saveBtn">Save</button>
+        <input type="text" id="newQuickMessage" placeholder="Enter message to save...">
+        <button id="saveBtn">Save Quick Message</button>
         
         <p id="status"></p>
     </div>
 
-    <div id="patient" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; margin:0; padding:20px; box-sizing:border-box; background-color:white;">
-        <button id="backBtn" style="position:absolute; top:10px; left:10px; font-size:16px;">Back</button>
-        <div id="messageDisplay" style="font-size:10vw; display:flex; align-items:center; justify-content:center; height:100%; width:100%; text-align:center;">Waiting for message...</div>
+    <div id="patient" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh;">
+        <button id="backBtn">Back</button>
+        <div id="messageDisplay">Waiting for message...</div>
     </div>
 </body>
 </html>
