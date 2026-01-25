@@ -282,17 +282,28 @@
         }
         
         #messageDisplay {
-            font-size: 8vw;
+            font-size: 6vw;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
+            padding-top: 15vh;
             height: calc(100% - 100px);
             width: 100%;
             text-align: center;
             font-weight: bold;
             color: white;
             text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
-            padding: 40px;
+            padding-left: 40px;
+            padding-right: 40px;
+        }
+        
+        #messageImage {
+            max-width: 50vw;
+            max-height: 40vh;
+            margin-top: 5vh;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
         
         #clockDisplay {
@@ -340,15 +351,19 @@
         const database = getDatabase(app);
 
         const defaultQuickMessages = [
-            { category: "Medication", text: "TIME FOR MEDICATION", icon: "💊" },
-            { category: "Medication", text: "TAKE YOUR PILLS", icon: "💊" },
-            { category: "Meals", text: "TIME FOR LUNCH", icon: "🍽️" },
-            { category: "Meals", text: "TIME FOR DINNER", icon: "🍽️" },
-            { category: "Meals", text: "TIME FOR BREAKFAST", icon: "☕" },
-            { category: "Reminders", text: "DRINK WATER", icon: "💧" },
-            { category: "Reminders", text: "TIME FOR EXERCISE", icon: "🚶" },
-            { category: "Communication", text: "PLEASE CALL ME", icon: "📞" },
-            { category: "Emergency", text: "EMERGENCY - CALL 911", icon: "🚨" }
+            { category: "Medication", text: "TIME FOR MEDICATION", icon: "💊", image: "MEDICATION_IMAGE_URL" },
+            { category: "Medication", text: "TAKE YOUR PILLS", icon: "💊", image: "PILLS_IMAGE_URL" },
+            { category: "Meals", text: "TIME FOR LUNCH", icon: "🍽️", image: "LUNCH_IMAGE_URL" },
+            { category: "Meals", text: "TIME FOR DINNER", icon: "🍽️", image: "DINNER_IMAGE_URL" },
+            { category: "Meals", text: "TIME FOR BREAKFAST", icon: "☕", image: "BREAKFAST_IMAGE_URL" },
+            { category: "Reminders", text: "DRINK WATER", icon: "💧", image: "WATER_IMAGE_URL" },
+            { category: "Reminders", text: "TIME FOR EXERCISE", icon: "🚶", image: "EXERCISE_IMAGE_URL" },
+            { category: "Reminders", text: "TIME FOR BED", icon: "🛏️", image: "https://imgur.com/a/kUY0UsK" },
+            { category: "Reminders", text: "LET THE DOG OUT", icon: "🐕", image: "DOG_IMAGE_URL" },
+            { category: "Communication", text: "PLEASE CALL ME", icon: "📞", image: "CALL_IMAGE_URL" },
+            { category: "Communication", text: "CALL YOUR DAUGHTER", icon: "📞", image: "DAUGHTER_IMAGE_URL" },
+            { category: "Communication", text: "CALL YOUR SON", icon: "📞", image: "SON_IMAGE_URL" },
+            { category: "Emergency", text: "EMERGENCY - CALL 911", icon: "🚨", image: "EMERGENCY_IMAGE_URL" }
         ];
 
         let audioContext;
@@ -582,7 +597,7 @@
                     
                     button.appendChild(content);
                     button.appendChild(deleteButton);
-                    button.onclick = () => sendQuickMessage(msg.text, msg.icon);
+                    button.onclick = () => sendQuickMessage(msg.text, msg.icon, msg.image);
                     
                     container.appendChild(button);
                 });
@@ -605,12 +620,13 @@
             }
         }
 
-        async function sendQuickMessage(message, icon) {
+        async function sendQuickMessage(message, icon, image) {
             try {
                 const timestamp = new Date().toLocaleString();
                 await set(ref(database, 'currentMessage'), {
                     text: message,
                     icon: icon,
+                    image: image,
                     timestamp: timestamp
                 });
                 
@@ -678,18 +694,16 @@
                         playChime();
                         flashScreen();
                         lastMessageText = data.text;
-                        
-                        // Show icon first if it exists
-                        if (data.icon) {
-                            document.getElementById('messageDisplay').innerHTML = `<div style="font-size: 15vw;">${data.icon}</div>`;
-                            
-                            // Then show the text after 2 seconds
-                            setTimeout(() => {
-                                document.getElementById('messageDisplay').textContent = data.text;
-                            }, 2000);
-                        } else {
-                            document.getElementById('messageDisplay').textContent = data.text;
-                        }
+                    }
+                    
+                    const displayDiv = document.getElementById('messageDisplay');
+                    
+                    // Show text at top
+                    displayDiv.innerHTML = `<div>${data.text}</div>`;
+                    
+                    // Add image below if it exists
+                    if (data.image && data.image !== '' && !data.image.includes('_IMAGE_URL')) {
+                        displayDiv.innerHTML += `<img id="messageImage" src="${data.image}" alt="Message image">`;
                     }
                     
                     if (messageTimeout) {
@@ -697,11 +711,11 @@
                     }
                     
                     messageTimeout = setTimeout(() => {
-                        document.getElementById('messageDisplay').textContent = 'Waiting for message...';
+                        document.getElementById('messageDisplay').innerHTML = '<div>Waiting for message...</div>';
                         lastMessageText = '';
                     }, 5 * 60 * 1000);
                 } else {
-                    document.getElementById('messageDisplay').textContent = 'Waiting for message...';
+                    document.getElementById('messageDisplay').innerHTML = '<div>Waiting for message...</div>';
                 }
             });
         }
