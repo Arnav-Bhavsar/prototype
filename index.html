@@ -716,6 +716,16 @@
             document.getElementById('sendBtn').addEventListener('click', sendMessage);
             document.getElementById('saveBtn').addEventListener('click', saveQuickMessage);
             document.getElementById('backBtn').addEventListener('click', goBack);
+            
+            // Check for URL parameter to auto-load mode
+            const urlParams = new URLSearchParams(window.location.search);
+            const mode = urlParams.get('mode');
+            
+            if (mode === 'patient') {
+                showPatient();
+            } else if (mode === 'caretaker') {
+                showCaretaker();
+            }
         });
     </script>
 </head>
