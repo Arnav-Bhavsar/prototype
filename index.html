@@ -17,15 +17,15 @@
             min-height: 100vh;
         }
         
-        
+        /* PATIENT MONITOR BACKGROUND - EASY TO CUSTOMIZE */
         #patient {
-            
-            
+            /* Change the URL below to your background image */
+            background-image: url('YOUR_BACKGROUND_URL_HERE');
             background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
-            
-            background-color: #02ccfe;
+            /* If no image, this color shows */
+            background-color: #2c3e50;
         }
         
         #modeSelection {
@@ -292,8 +292,8 @@
             width: 100%;
             text-align: center;
             font-weight: bold;
-            color: #FFED29;
-            text-shadow: 3px 3px 6px rgba(240,240,0,0.5);
+            color: white;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
             padding-left: 40px;
             padding-right: 40px;
         }
@@ -350,21 +350,22 @@
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
 
-       const defaultQuickMessages = [
-            { category: "Medication", text: "TIME FOR MEDICATION", icon: "💊", image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/8.png?alt=media&token=35b4dfe6-4822-4f3d-b8bb-a0293b88d578" },
-            { category: "Medication", text: "TAKE YOUR PILLS", icon: "💊", image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/8.png?alt=media&token=35b4dfe6-4822-4f3d-b8bb-a0293b88d578" },
-            { category: "Meals", text: "TIME FOR LUNCH", icon: "🍽️", image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/4.png?alt=media&token=2a1debc8-a636-486d-803a-ab94a70fe7ef" },
-            { category: "Meals", text: "TIME FOR DINNER", icon: "🍽️", image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/4.png?alt=media&token=2a1debc8-a636-486d-803a-ab94a70fe7ef" },
-            { category: "Meals", text: "TIME FOR BREAKFAST", icon: "☕", image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/4.png?alt=media&token=2a1debc8-a636-486d-803a-ab94a70fe7ef" },
-            { category: "Reminders", text: "DRINK WATER", icon: "💧", image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/TIME%20TO%20EAT.png?alt=media&token=f2f29632-a197-4b07-ab31-aaec1de3736e" },
-            { category: "Reminders", text: "TIME FOR EXERCISE", icon: "🚶", image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/14.png?alt=media&token=7595873a-5530-410a-82d8-1fb2402c9ffe" },
-            { category: "Reminders", text: "TIME FOR BED", icon: "🛏️", image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/2.png?alt=media&token=2d0e637e-ebd2-489f-9924-9648c4850461" },
-            { category: "Reminders", text: "LET THE DOG OUT", icon: "🐕", image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/6.png?alt=media&token=9d309dc4-e089-44f7-9bdb-8a541cbae68a" },
-            { category: "Communication", text: "PLEASE CALL ME", icon: "📞", image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/10.png?alt=media&token=3dbb82ba-eb6b-499f-9011-5ec722e797e1" },
-            { category: "Communication", text: "CALL YOUR DAUGHTER", icon: "📞", image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/10.png?alt=media&token=3dbb82ba-eb6b-499f-9011-5ec722e797e1" },
-            { category: "Communication", text: "CALL YOUR SON", icon: "📞", image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/10.png?alt=media&token=3dbb82ba-eb6b-499f-9011-5ec722e797e1" },
-            { category: "Emergency", text: "EMERGENCY - CALL 911", icon: "🚨", image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/12.png?alt=media&token=7ce8b17f-34fc-447c-8ebd-16a5b4f497c0" }
+        const defaultQuickMessages = [
+            { category: "Medication", text: "TIME FOR MEDICATION", icon: "💊", image: "MEDICATION_IMAGE_URL" },
+            { category: "Medication", text: "TAKE YOUR PILLS", icon: "💊", image: "PILLS_IMAGE_URL" },
+            { category: "Meals", text: "TIME FOR LUNCH", icon: "🍽️", image: "LUNCH_IMAGE_URL" },
+            { category: "Meals", text: "TIME FOR DINNER", icon: "🍽️", image: "DINNER_IMAGE_URL" },
+            { category: "Meals", text: "TIME FOR BREAKFAST", icon: "☕", image: "BREAKFAST_IMAGE_URL" },
+            { category: "Reminders", text: "DRINK WATER", icon: "💧", image: "WATER_IMAGE_URL" },
+            { category: "Reminders", text: "TIME FOR EXERCISE", icon: "🚶", image: "EXERCISE_IMAGE_URL" },
+            { category: "Reminders", text: "TIME FOR BED", icon: "🛏️", image: "BED_IMAGE_URL" },
+            { category: "Reminders", text: "LET THE DOG OUT", icon: "🐕", image: "DOG_IMAGE_URL" },
+            { category: "Communication", text: "PLEASE CALL ME", icon: "📞", image: "CALL_IMAGE_URL" },
+            { category: "Communication", text: "CALL YOUR DAUGHTER", icon: "📞", image: "DAUGHTER_IMAGE_URL" },
+            { category: "Communication", text: "CALL YOUR SON", icon: "📞", image: "SON_IMAGE_URL" },
+            { category: "Emergency", text: "EMERGENCY - CALL 911", icon: "🚨", image: "EMERGENCY_IMAGE_URL" }
         ];
+
         let audioContext;
         let lastMessageText = '';
         let messageTimeout;
@@ -530,6 +531,16 @@
             const connRef = ref(database, '.info/connected');
             onValue(connRef, (snapshot) => {
                 updateConnectionStatus(snapshot.val() === true);
+            });
+            
+            // Monitor dispenser status
+            const statusRef = ref(database, 'dispenserStatus');
+            onValue(statusRef, (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    document.getElementById('dispenserStatus').style.display = 'block';
+                    document.getElementById('dispenserStatusText').textContent = data.status || 'Ready';
+                }
             });
         }
 
@@ -732,6 +743,21 @@
             document.getElementById('saveBtn').addEventListener('click', saveQuickMessage);
             document.getElementById('backBtn').addEventListener('click', goBack);
             
+            // Emergency dispense button
+            const emergencyBtn = document.getElementById('emergencyDispenseBtn');
+            if (emergencyBtn) {
+                emergencyBtn.addEventListener('click', async () => {
+                    if (confirm('Are you sure you want to dispense a pill immediately?')) {
+                        try {
+                            await set(ref(database, 'emergencyDispense'), true);
+                            showNotification('Emergency dispense triggered!', 'success');
+                        } catch (error) {
+                            showNotification('Error triggering dispense', 'error');
+                        }
+                    }
+                });
+            }
+            
             // Check for URL parameter to auto-load mode
             const urlParams = new URLSearchParams(window.location.search);
             const mode = urlParams.get('mode');
@@ -757,6 +783,12 @@
         <div class="connectionStatus">
             <div class="statusDot"></div>
             <span class="statusText">Connecting...</span>
+        </div>
+        
+        <div class="dispenserStatus" id="dispenserStatus" style="background: rgba(255,255,255,0.2); padding: 20px; border-radius: 15px; margin-bottom: 20px; display: none;">
+            <h3 style="margin: 0 0 10px 0;">💊 Pill Dispenser Status</h3>
+            <div id="dispenserStatusText" style="font-size: 1.1em; font-weight: 600;">Ready</div>
+            <button id="emergencyDispenseBtn" style="margin-top: 15px; background: #f44336; color: white; border: none; padding: 12px 25px; border-radius: 20px; font-weight: 600; cursor: pointer; font-size: 1em;">Emergency Dispense Now</button>
         </div>
         
         <h3>Quick Messages</h3>
