@@ -475,6 +475,8 @@
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
 
+        let audioContext;
+
         const defaultQuickMessages = [
             { category: "Medication", text: "TIME FOR MEDICATION", icon: "💊", image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/8.png?alt=media&token=35b4dfe6-4822-4f3d-b8bb-a0293b88d578" },
             { category: "Medication", text: "TAKE YOUR PILLS", icon: "💊", image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/8.png?alt=media&token=35b4dfe6-4822-4f3d-b8bb-a0293b88d578" },
@@ -1124,3 +1126,4 @@
     </div>
 </body>
 </html>
+
