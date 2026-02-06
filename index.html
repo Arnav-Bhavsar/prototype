@@ -151,13 +151,37 @@
             flex: 1;
         }
         
+        .buttonActions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .previewBtn, .editBtn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            font-size: 1em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .previewBtn:hover, .editBtn:hover {
+            background: #1976D2;
+        }
+        
         .deleteBtn {
             background: #f44336;
             color: white;
             border: none;
             border-radius: 50%;
-            width: 30px;
-            height: 30px;
+            width: 35px;
+            height: 35px;
             font-size: 1.2em;
             cursor: pointer;
             display: flex;
@@ -168,6 +192,107 @@
         
         .deleteBtn:hover {
             background: #d32f2f;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.8);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modalContent {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
+            color: #333;
+        }
+        
+        .previewScreen {
+            background: #2c3e50;
+            min-height: 400px;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            margin: 20px 0;
+        }
+        
+        .previewText {
+            font-size: 2em;
+            font-weight: bold;
+            color: white;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        .previewImage {
+            max-width: 300px;
+            max-height: 250px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+        
+        .modalButtons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .modalBtn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .modalBtn.primary {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .modalBtn.secondary {
+            background: #ddd;
+            color: #333;
+        }
+        
+        .editForm {
+            margin: 20px 0;
+        }
+        
+        .editForm label {
+            display: block;
+            margin: 15px 0 5px 0;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .editForm input, .editForm textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+        
+        .editForm textarea {
+            min-height: 100px;
+            resize: vertical;
         }
         
         .icon {
@@ -351,23 +476,33 @@
         const database = getDatabase(app);
 
         const defaultQuickMessages = [
-            { category: "Medication", text: "TIME FOR MEDICATION", icon: "💊", image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/8.png?alt=media&token=35b4dfe6-4822-4f3d-b8bb-a0293b88d578" },
-            { category: "Medication", text: "TAKE YOUR PILLS", icon: "💊", image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/8.png?alt=media&token=35b4dfe6-4822-4f3d-b8bb-a0293b88d578" },
-            { category: "Meals", text: "TIME FOR LUNCH", icon: "🍽️", image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/4.png?alt=media&token=2a1debc8-a636-486d-803a-ab94a70fe7ef" },
-            { category: "Meals", text: "TIME FOR DINNER", icon: "🍽️", image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/4.png?alt=media&token=2a1debc8-a636-486d-803a-ab94a70fe7ef" },
-            { category: "Meals", text: "TIME FOR BREAKFAST", icon: "☕", image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/4.png?alt=media&token=2a1debc8-a636-486d-803a-ab94a70fe7ef" },
-            { category: "Reminders", text: "DRINK WATER", icon: "💧", image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/TIME%20TO%20EAT.png?alt=media&token=f2f29632-a197-4b07-ab31-aaec1de3736e" },
-            { category: "Reminders", text: "TIME FOR EXERCISE", icon: "🚶", image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/14.png?alt=media&token=7595873a-5530-410a-82d8-1fb2402c9ffe" },
-            { category: "Reminders", text: "TIME FOR BED", icon: "🛏️", image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/2.png?alt=media&token=2d0e637e-ebd2-489f-9924-9648c4850461" },
-            { category: "Reminders", text: "LET THE DOG OUT", icon: "🐕", image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/6.png?alt=media&token=9d309dc4-e089-44f7-9bdb-8a541cbae68a" },
-            { category: "Communication", text: "PLEASE CALL ME", icon: "📞", image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/10.png?alt=media&token=3dbb82ba-eb6b-499f-9011-5ec722e797e1" },
-            { category: "Communication", text: "CALL YOUR DAUGHTER", icon: "📞", image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/10.png?alt=media&token=3dbb82ba-eb6b-499f-9011-5ec722e797e1" },
-            { category: "Communication", text: "CALL YOUR SON", icon: "📞", image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/10.png?alt=media&token=3dbb82ba-eb6b-499f-9011-5ec722e797e1" },
-            { category: "Emergency", text: "EMERGENCY - CALL 911", icon: "🚨", image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/12.png?alt=media&token=7ce8b17f-34fc-447c-8ebd-16a5b4f497c0" }
+            { category: "Medication", text: "TIME FOR MEDICATION", icon: "💊", image: "MEDICATION_IMAGE_URL" },
+            { category: "Medication", text: "TAKE YOUR PILLS", icon: "💊", image: "PILLS_IMAGE_URL" },
+            { category: "Meals", text: "TIME FOR LUNCH", icon: "🍽️", image: "LUNCH_IMAGE_URL" },
+            { category: "Meals", text: "TIME FOR DINNER", icon: "🍽️", image: "DINNER_IMAGE_URL" },
+            { category: "Meals", text: "TIME FOR BREAKFAST", icon: "☕", image: "BREAKFAST_IMAGE_URL" },
+            { category: "Reminders", text: "DRINK WATER", icon: "💧", image: "WATER_IMAGE_URL" },
+            { category: "Reminders", text: "TIME FOR EXERCISE", icon: "🚶", image: "EXERCISE_IMAGE_URL" },
+            { category: "Reminders", text: "TIME FOR BED", icon: "🛏️", image: "BED_IMAGE_URL" },
+            { category: "Reminders", text: "LET THE DOG OUT", icon: "🐕", image: "DOG_IMAGE_URL" },
+            { category: "Communication", text: "PLEASE CALL ME", icon: "📞", image: "CALL_IMAGE_URL" },
+            { category: "Communication", text: "CALL YOUR DAUGHTER", icon: "📞", image: "DAUGHTER_IMAGE_URL" },
+            { category: "Communication", text: "CALL YOUR SON", icon: "📞", image: "SON_IMAGE_URL" },
+            { category: "Emergency", text: "EMERGENCY - CALL 911", icon: "🚨", image: "EMERGENCY_IMAGE_URL" }
         ];
 
-
-        let audioContext;
+        function getDynamicMessage(messageKey) {
+            const now = new Date();
+            const dayName = now.toLocaleDateString('en-US', { weekday: 'long' });
+            const time = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+            
+            if (messageKey === 'DYNAMIC_MORNING_LUCY') {
+                return `Good Morning! It's ${time} on ${dayName}. Time to let Lucy out to the backyard`;
+            } else if (messageKey === 'DYNAMIC_JESS_WORK') {
+                return `Hey Mom, I'm at work until 5:00 today. I'll call you at 6:00. Love you! Your daughter Jess`;
+            }
+            return messageKey;
+        }
         let lastMessageText = '';
         let messageTimeout;
         let isConnected = false;
@@ -595,22 +730,52 @@
                     icon.textContent = msg.icon || '📢';
                     
                     const text = document.createElement('span');
-                    text.textContent = msg.text;
+                    const displayText = msg.text.startsWith('DYNAMIC_') ? getDynamicMessage(msg.text) : msg.text;
+                    text.textContent = displayText;
                     
                     content.appendChild(icon);
                     content.appendChild(text);
                     
+                    const actions = document.createElement('div');
+                    actions.className = 'buttonActions';
+                    
+                    const previewButton = document.createElement('button');
+                    previewButton.className = 'previewBtn';
+                    previewButton.textContent = '👁';
+                    previewButton.title = 'Preview';
+                    previewButton.onclick = (e) => {
+                        e.stopPropagation();
+                        showPreview(msg);
+                    };
+                    
+                    const editButton = document.createElement('button');
+                    editButton.className = 'editBtn';
+                    editButton.textContent = '✏️';
+                    editButton.title = 'Edit';
+                    editButton.onclick = (e) => {
+                        e.stopPropagation();
+                        showEditModal(msg);
+                    };
+                    
                     const deleteButton = document.createElement('button');
                     deleteButton.className = 'deleteBtn';
                     deleteButton.textContent = '×';
+                    deleteButton.title = 'Delete';
                     deleteButton.onclick = (e) => {
                         e.stopPropagation();
                         deleteQuickMessage(msg.index);
                     };
                     
+                    actions.appendChild(previewButton);
+                    actions.appendChild(editButton);
+                    actions.appendChild(deleteButton);
+                    
                     button.appendChild(content);
-                    button.appendChild(deleteButton);
-                    button.onclick = () => sendQuickMessage(msg.text, msg.icon, msg.image);
+                    button.appendChild(actions);
+                    button.onclick = () => {
+                        const finalText = msg.text.startsWith('DYNAMIC_') ? getDynamicMessage(msg.text) : msg.text;
+                        sendQuickMessage(finalText, msg.icon, msg.image);
+                    };
                     
                     container.appendChild(button);
                 });
@@ -631,6 +796,112 @@
                 showNotification('Error deleting message', 'error');
                 console.error(error);
             }
+        }
+        
+        function showPreview(msg) {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.style.display = 'flex';
+            
+            const displayText = msg.text.startsWith('DYNAMIC_') ? getDynamicMessage(msg.text) : msg.text;
+            
+            modal.innerHTML = `
+                <div class="modalContent">
+                    <h2>Message Preview</h2>
+                    <div class="previewScreen">
+                        <div class="previewText">${displayText}</div>
+                        ${msg.image && !msg.image.includes('_IMAGE_URL') ? `<img class="previewImage" src="${msg.image}" alt="Message image">` : ''}
+                    </div>
+                    <div class="modalButtons">
+                        <button class="modalBtn primary" onclick="this.closest('.modal').remove()">Close</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            modal.onclick = (e) => {
+                if (e.target === modal) modal.remove();
+            };
+        }
+        
+        async function showEditModal(msg) {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.style.display = 'flex';
+            
+            const displayText = msg.text.startsWith('DYNAMIC_') ? getDynamicMessage(msg.text) : msg.text;
+            
+            modal.innerHTML = `
+                <div class="modalContent">
+                    <h2>Edit Message</h2>
+                    <div class="editForm">
+                        <label>Message Text:</label>
+                        <textarea id="editText">${displayText}</textarea>
+                        
+                        <label>Image URL:</label>
+                        <input type="text" id="editImage" value="${msg.image || ''}" placeholder="https://...">
+                        
+                        <label>Icon/Emoji:</label>
+                        <input type="text" id="editIcon" value="${msg.icon || '📢'}" maxlength="2">
+                    </div>
+                    <div class="previewScreen">
+                        <div class="previewText" id="livePreviewText">${displayText}</div>
+                        ${msg.image && !msg.image.includes('_IMAGE_URL') ? `<img class="previewImage" id="livePreviewImage" src="${msg.image}" alt="Preview">` : '<img class="previewImage" id="livePreviewImage" style="display:none;">'}
+                    </div>
+                    <div class="modalButtons">
+                        <button class="modalBtn secondary" onclick="this.closest('.modal').remove()">Cancel</button>
+                        <button class="modalBtn primary" id="saveEditBtn">Save Changes</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Live preview updates
+            const textInput = modal.querySelector('#editText');
+            const imageInput = modal.querySelector('#editImage');
+            const previewText = modal.querySelector('#livePreviewText');
+            const previewImage = modal.querySelector('#livePreviewImage');
+            
+            textInput.oninput = () => {
+                previewText.textContent = textInput.value;
+            };
+            
+            imageInput.oninput = () => {
+                if (imageInput.value && !imageInput.value.includes('_IMAGE_URL')) {
+                    previewImage.src = imageInput.value;
+                    previewImage.style.display = 'block';
+                } else {
+                    previewImage.style.display = 'none';
+                }
+            };
+            
+            // Save button
+            modal.querySelector('#saveEditBtn').onclick = async () => {
+                try {
+                    const snapshot = await get(ref(database, 'quickMessages'));
+                    let messages = snapshot.val() || defaultQuickMessages;
+                    
+                    messages[msg.index] = {
+                        ...msg,
+                        text: textInput.value,
+                        image: imageInput.value,
+                        icon: modal.querySelector('#editIcon').value
+                    };
+                    
+                    await set(ref(database, 'quickMessages'), messages);
+                    showNotification('Message updated!', 'success');
+                    await loadQuickMessages();
+                    modal.remove();
+                } catch (error) {
+                    showNotification('Error updating message', 'error');
+                    console.error(error);
+                }
+            };
+            
+            modal.onclick = (e) => {
+                if (e.target === modal) modal.remove();
+            };
         }
 
         async function sendQuickMessage(message, icon, image) {
@@ -820,4 +1091,3 @@
     </div>
 </body>
 </html>
-
