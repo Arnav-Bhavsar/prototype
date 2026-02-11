@@ -431,6 +431,20 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
         
+        #messageImage.fullscreen {
+            max-width: 100vw;
+            max-height: 100vh;
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+            margin: 0;
+            border-radius: 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 100;
+        }
+        
         #clockDisplay {
             position: absolute;
             top: 20px;
@@ -475,9 +489,9 @@
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
 
-        let audioContext;
-
         const defaultQuickMessages = [
+                
+const defaultQuickMessages = [
     { category: "Medication", text: "TIME FOR MEDICATION", icon: "💊", image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/8.png?alt=media&token=35b4dfe6-4822-4f3d-b8bb-a0293b88d578" },
     { category: "Medication", text: "TAKE YOUR PILLS", icon: "💊", image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/8.png?alt=media&token=35b4dfe6-4822-4f3d-b8bb-a0293b88d578" },
     { category: "Meals", text: "TIME FOR LUNCH", icon: "🍽️", image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/4.png?alt=media&token=2a1debc8-a636-486d-803a-ab94a70fe7ef" },
@@ -493,9 +507,7 @@
     { category: "Communication", text: "CALL YOUR SON", icon: "📞", image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/10.png?alt=media&token=3dbb82ba-eb6b-499f-9011-5ec722e797e1" },
     { category: "Communication", text: "DYNAMIC_JESS_WORK", icon: "💼", image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/10.png?alt=media&token=3dbb82ba-eb6b-499f-9011-5ec722e797e1" },
     { category: "Emergency", text: "EMERGENCY - CALL 911", icon: "🚨", image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/12.png?alt=media&token=7ce8b17f-34fc-447c-8ebd-16a5b4f497c0" },
-    { category: "Image Only", text: "IMAGE_ONLY_1", icon: "🖼️", image: "FULLSCREEN_IMAGE_URL_1" },
-    { category: "Image Only", text: "IMAGE_ONLY_2", icon: "🖼️", image: "FULLSCREEN_IMAGE_URL_2" }
-];
+        ];
 
         function getDynamicMessage(messageKey) {
             const now = new Date();
@@ -718,7 +730,7 @@
                         category: "Reminders", 
                         text: "DYNAMIC_MORNING_LUCY", 
                         icon: "🌅", 
-                        image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/IMG_3627.png?alt=media&token=a7f43b85-87b9-4a10-bbc5-facde4415c5c" 
+                        image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/6.png?alt=media&token=9d309dc4-e089-44f7-9bdb-8a541cbae68a" 
                     });
                 }
                 
@@ -727,12 +739,34 @@
                         category: "Communication", 
                         text: "DYNAMIC_JESS_WORK", 
                         icon: "💼", 
-                        image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/IMG_3628.png?alt=media&token=3f18741c-7646-4704-846b-25b61e8659e7" 
+                        image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/10.png?alt=media&token=3dbb82ba-eb6b-499f-9011-5ec722e797e1" 
+                    });
+                }
+                
+                // Check for image-only messages
+                const hasImage1 = messages.some(m => m.text === 'IMAGE_ONLY_1');
+                const hasImage2 = messages.some(m => m.text === 'IMAGE_ONLY_2');
+                
+                if (!hasImage1) {
+                    messages.push({
+                        category: "Image Only",
+                        text: "IMAGE_ONLY_1",
+                        icon: "🖼️",
+                        image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/IMG_3632.png?alt=media&token=8275c0f3-68de-44a2-93ca-85d87facbe2f"
+                    });
+                }
+                
+                if (!hasImage2) {
+                    messages.push({
+                        category: "Image Only",
+                        text: "IMAGE_ONLY_2",
+                        icon: "🖼️",
+                        image: "https://firebasestorage.googleapis.com/v0/b/patient-monitor-ca78a.firebasestorage.app/o/IMG_3631.png?alt=media&token=ad1b0d6b-d898-4629-8ffe-f65c9cdb67b6"
                     });
                 }
                 
                 // Save updated messages if new ones were added
-                if (!hasLucyMessage || !hasJessMessage) {
+                if (!hasLucyMessage || !hasJessMessage || !hasImage1 || !hasImage2) {
                     await set(ref(database, 'quickMessages'), messages);
                 }
             }
@@ -769,7 +803,14 @@
                     icon.textContent = msg.icon || '📢';
                     
                     const text = document.createElement('span');
-                    const displayText = msg.text.startsWith('DYNAMIC_') ? getDynamicMessage(msg.text) : msg.text;
+                    let displayText;
+                    if (msg.text.startsWith('DYNAMIC_')) {
+                        displayText = getDynamicMessage(msg.text);
+                    } else if (msg.text.startsWith('IMAGE_ONLY_')) {
+                        displayText = 'Fullscreen Image';
+                    } else {
+                        displayText = msg.text;
+                    }
                     text.textContent = displayText;
                     
                     content.appendChild(icon);
@@ -1020,13 +1061,37 @@
                     }
                     
                     const displayDiv = document.getElementById('messageDisplay');
+                    const clockDiv = document.getElementById('clockDisplay');
+                    const connectionDiv = document.querySelector('.patientConnection');
+                    const backBtn = document.getElementById('backBtn');
                     
-                    // Show text at top
-                    displayDiv.innerHTML = `<div>${data.text}</div>`;
-                    
-                    // Add image below if it exists
-                    if (data.image && data.image !== '' && !data.image.includes('_IMAGE_URL')) {
-                        displayDiv.innerHTML += `<img id="messageImage" src="${data.image}" alt="Message image">`;
+                    // Check if this is an image-only message
+                    if (data.text && data.text.startsWith('IMAGE_ONLY_')) {
+                        // Hide all UI elements for fullscreen image
+                        clockDiv.style.display = 'none';
+                        connectionDiv.style.display = 'none';
+                        backBtn.style.display = 'none';
+                        
+                        // Hide text, show only fullscreen image
+                        displayDiv.innerHTML = '';
+                        displayDiv.style.padding = '0';
+                        if (data.image && data.image !== '' && !data.image.includes('_IMAGE_URL')) {
+                            displayDiv.innerHTML = `<img id="messageImage" class="fullscreen" src="${data.image}" alt="Message image">`;
+                        }
+                    } else {
+                        // Show UI elements for normal messages
+                        clockDiv.style.display = 'block';
+                        connectionDiv.style.display = 'flex';
+                        backBtn.style.display = 'block';
+                        displayDiv.style.padding = '40px';
+                        
+                        // Normal message with text at top
+                        displayDiv.innerHTML = `<div>${data.text}</div>`;
+                        
+                        // Add image below if it exists
+                        if (data.image && data.image !== '' && !data.image.includes('_IMAGE_URL')) {
+                            displayDiv.innerHTML += `<img id="messageImage" src="${data.image}" alt="Message image">`;
+                        }
                     }
                     
                     if (messageTimeout) {
@@ -1034,6 +1099,11 @@
                     }
                     
                     messageTimeout = setTimeout(() => {
+                        // Restore UI when clearing message
+                        clockDiv.style.display = 'block';
+                        connectionDiv.style.display = 'flex';
+                        backBtn.style.display = 'block';
+                        displayDiv.style.padding = '40px';
                         document.getElementById('messageDisplay').innerHTML = '<div>Waiting for message...</div>';
                         lastMessageText = '';
                     }, 5 * 60 * 1000);
@@ -1130,6 +1200,3 @@
     </div>
 </body>
 </html>
-
-
-
